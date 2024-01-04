@@ -134,3 +134,17 @@ int main()
 
 	return 0;
 }
+
+cv::Mat process_image_gpu(cv::Mat image_bgr, int sizeX = 360, int sizeY = 360)
+{
+	cv::cuda::GpuMat image_gpu;
+	cv::Mat processed_image;
+	image_gpu.upload(image_bgr);
+	cv::cuda::resize(image_gpu, image_gpu, { sizeX, sizeY }, cv::InterpolationFlags::INTER_CUBIC);
+	cv::cuda::cvtColor(image_gpu, image_gpu, cv::ColorConversionCodes::COLOR_BGR2RGB);
+	image_gpu.convertTo(image_gpu, CV_32F, 1.0 / 255);
+
+	image_gpu.download(processed_image);
+	cv::dnn::blobFromImage(processed_image, processed_image);
+	return processed_image;
+}
