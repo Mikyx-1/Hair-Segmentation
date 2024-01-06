@@ -12,13 +12,17 @@ import torch.nn.functional as F
 
 torch.set_grad_enabled(False)
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
 model = BiSeNet(2)
 model.eval()
+model.to(device)
 model.activate_evaluation_mode()
 model.load_state_dict(torch.load("./bisenet_360_trial_7/last.pt", map_location="cpu"))
 
 img_dirs = sorted(glob.glob("/home/edmond/Desktop/instance-level-human-parsing/images/*"))
 mask_dirs = sorted(glob.glob("/home/edmond/Desktop/instance-level-human-parsing/masks/*"))
+print(f"Num images: {len(img_dirs)}, Num masks: {len(mask_dirs)}")
+
 
 transform = A.Compose([A.Resize(360, 360), 
                       ToTensorV2()])
@@ -34,3 +38,4 @@ for ith, img_dir in enumerate(img_dirs[1:]):
     iou = 2*(pred*mask).sum()/(pred.sum() + mask.sum())
     ious.append([img_dir, iou])
 
+sorted_ious = sorted(ious, key=lambda x: x[1])
