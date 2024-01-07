@@ -1,4 +1,3 @@
-                                                                                             
 from bisenet import BiSeNet
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +9,7 @@ import glob
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import torch.nn.functional as F
+from tqdm import tqdm
 
 torch.set_grad_enabled(False)
 
@@ -18,7 +18,7 @@ model = BiSeNet(2)
 model.eval()
 model.to(device)
 model.activate_evaluation_mode()
-model.load_state_dict(torch.load("./bisenet_360_trial_7/val_loss_min.pt", map_location="cpu"))
+model.load_state_dict(torch.load("./val_loss_min.pt", map_location=device))
 
 img_dirs = sorted(glob.glob("../train_dataset/images/*"))
 mask_dirs = sorted(glob.glob("../train_dataset/masks/*"))
@@ -34,10 +34,10 @@ for i in tqdm(range(len(img_dirs))):
     mask = cv2.imread(mask_dirs[i], cv2.IMREAD_GRAYSCALE)
     mask = np.where(mask==2, 1, 0)
     mask = cv2.resize(mask.astype("uint8"), (360, 360))
-    transformed = transform(image=image)["image"][None, ...]
+    transformed = transform(image=image)["image"][None, ...].to(device)
     pred = model(transformed).argmax(1)[0]
-    iou = 2*(pred*mask + 0.0001).sum()/(pred.sum() + mask.sum() + 0.0001)
-    ious.append([img_dir, iou])
+    iou = 2*(pred.cpu().numpy()*mask + 0.0001).sum()/(pred.cpu().numpy().sum() + mask.sum() + 0.0001)
+    ious.append([img_dirs[i], iou.cpu().item()])
 
 sorted_ious = sorted(ious, key=lambda x: x[1])
 with open("sorted_ious.txt", "w") as file:
