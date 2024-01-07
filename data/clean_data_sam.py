@@ -1,3 +1,8 @@
+'''
+Implementation of data cleaning with available labels
+'''
+
+
 #!pip install opencv-python pycocotools matplotlib onnxruntime onnx
 
 
