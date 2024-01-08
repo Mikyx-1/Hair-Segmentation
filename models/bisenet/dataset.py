@@ -58,4 +58,4 @@ def createTestLoader(img_dirs, mask_dirs, batch_size, num_workers):
     transform = A.Compose([A.Resize(360, 360),
                        ToTensorV2()])
     pin_memory = True if torch.cuda.is_available() else False  
-    return DataLoader(CreateDataset(img_dirs, mask_dirs, transform, val_set=False), shuffle=False, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
+    return DataLoader(CreateDataset(img_dirs, mask_dirs, transform), shuffle=False, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
